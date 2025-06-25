@@ -2,16 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SpotRec 🎧 - Mood Playlist Recommender</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SpotRec 🎧</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1db954, #191414);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      width: 70%;
+      margin-bottom: 20px;
+    }
+
+    .emoji-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .emoji-buttons button {
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      background-color: #fff;
+      color: #191414;
+      cursor: pointer;
+    }
+
+    .emoji-buttons button:hover {
+      background-color: #e0e0e0;
+    }
+
+    #search-btn {
+      padding: 10px 20px;
+      background-color: #1db954;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    #search-btn:hover {
+      background-color: #14833b;
+    }
+
+    .loader {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .result {
+      margin-top: 20px;
+    }
+
+    .result a {
+      color: #1db954;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .result a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>🎧 SpotRec</h1>
     <p>Enter your mood or pick one below</p>
     <input type="text" id="mood-input" placeholder="e.g. happy, sad, chill" />
+    
     <div class="emoji-buttons">
       <button onclick="setMood('happy')">😊 Happy</button>
       <button onclick="setMood('sad')">😢 Sad</button>
@@ -19,13 +115,56 @@
       <button onclick="setMood('focus')">🧘 Focus</button>
       <button onclick="setMood('party')">🎉 Party</button>
     </div>
+
     <button id="search-btn">Get Playlist</button>
     <div class="loader" id="loader">Loading playlist...</div>
+
     <div class="result">
       <p id="playlist-name"></p>
       <a id="playlist-link" href="#" target="_blank"></a>
     </div>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    function setMood(mood) {
+      document.getElementById('mood-input').value = mood;
+    }
+
+    document.getElementById("search-btn").addEventListener("click", () => {
+      const mood = document.getElementById("mood-input").value.trim();
+      const loader = document.getElementById("loader");
+      const name = document.getElementById("playlist-name");
+      const link = document.getElementById("playlist-link");
+
+      if (!mood) {
+        alert("Please enter or select a mood.");
+        return;
+      }
+
+      loader.style.display = "block";
+      name.textContent = "";
+      link.textContent = "";
+      link.href = "#";
+
+      fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${encodeURIComponent(mood)}`)
+        .then(res => res.json())
+        .then(data => {
+          loader.style.display = "none";
+          if (data.error || !data.playlist) {
+            name.textContent = "No playlist found. Try another mood.";
+            link.textContent = "";
+          } else {
+            name.textContent = `🎵 ${data.playlist}`;
+            link.textContent = "Listen on Spotify";
+            link.href = data.url;
+          }
+        })
+        .catch(err => {
+          loader.style.display = "none";
+          name.textContent = "Something went wrong. Try again later.";
+          console.error(err);
+        });
+    });
+  </script>
 </body>
 </html>
