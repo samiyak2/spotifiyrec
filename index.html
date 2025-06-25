@@ -1,58 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SpotRec – Playlist Recommender</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #121212;
-      color: white;
-      text-align: center;
-      padding: 40px;
-    }
-    select, button {
-      padding: 10px;
-      margin: 10px;
-      font-size: 16px;
-    }
-    .result {
-      margin-top: 30px;
-    }
-    a {
-      color: #1DB954;
-      text-decoration: none;
-      font-size: 18px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpotRec 🎧 - Mood Playlist Recommender</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>🎧 SpotRec</h1>
-  <h2>Spotify Playlist Recommender</h2>
-  
-  <select id="mood">
-    <option value="happy">Happy</option>
-    <option value="chill">Chill</option>
-    <option value="sad">Sad</option>
-    <option value="focus">Focus</option>
-    <option value="workout">Workout</option>
-  </select>
-  <button onclick="getPlaylist()">Get Playlist</button>
-
-  <div class="result" id="result"></div>
-
-  <script>
-    async function getPlaylist() {
-      const mood = document.getElementById("mood").value;
-      const response = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${mood}`);
-      const data = await response.json();
-      
-      const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = `
-        <p><strong>Mood:</strong> ${data.mood}</p>
-        <p><strong>Playlist:</strong> ${data.playlist}</p>
-        <a href="${data.url}" target="_blank">🎵 Open in Spotify</a>
-      `;
-    }
-  </script>
+  <div class="container">
+    <h1>🎧 SpotRec</h1>
+    <p>Enter your mood or pick one below</p>
+    <input type="text" id="mood-input" placeholder="e.g. happy, sad, chill" />
+    <div class="emoji-buttons">
+      <button onclick="setMood('happy')">😊 Happy</button>
+      <button onclick="setMood('sad')">😢 Sad</button>
+      <button onclick="setMood('chill')">🌴 Chill</button>
+      <button onclick="setMood('focus')">🧘 Focus</button>
+      <button onclick="setMood('party')">🎉 Party</button>
+    </div>
+    <button id="search-btn">Get Playlist</button>
+    <div class="loader" id="loader">Loading playlist...</div>
+    <div class="result">
+      <p id="playlist-name"></p>
+      <a id="playlist-link" href="#" target="_blank"></a>
+    </div>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
