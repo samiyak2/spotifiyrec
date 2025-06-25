@@ -43,7 +43,7 @@
   <script>
     async function getPlaylist() {
       const mood = document.getElementById("mood").value;
-      const response = await fetch(`https://YOUR_CLOUD_RUN_URL/recommend?mood=${mood}`);
+      const response = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${mood}`);
       const data = await response.json();
       
       const resultDiv = document.getElementById("result");
