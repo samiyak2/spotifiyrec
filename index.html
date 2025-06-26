@@ -3,72 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Moodify 🎧</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-</head>
-<body class="bg-gradient-to-br from-green-500 to-green-700 min-h-screen flex items-center justify-center text-white px-4">
-  <div class="bg-black bg-opacity-70 p-6 rounded-xl shadow-lg max-w-md w-full text-center">
-    <h1 class="text-3xl font-bold mb-2">🎧 Moodify</h1>
-    <p class="mb-4 text-sm">Get personalized Spotify playlists by mood, language, and artist</p>
-
-    <!-- Login -->
-    <button id="loginBtn" class="bg-white text-black px-4 py-2 rounded mb-4 hover:bg-gray-200 transition-all">Login with Google</button>
-    <p id="userInfo" class="text-xs mb-2 hidden"></p>
-
-    <!-- Mood -->
-    <p class="font-semibold mt-4 mb-2">Select Mood:</p>
-    <div class="flex flex-wrap justify-center gap-2 mb-4">
-      <button class="btn" onclick="setMood('happy')">Happy</button>
-      <button class="btn" onclick="setMood('sad')">Sad</button>
-      <button class="btn" onclick="setMood('chill')">Chill</button>
-      <button class="btn" onclick="setMood('focus')">Focus</button>
-      <button class="btn" onclick="setMood('romantic')">Romantic</button>
-      <button class="btn" onclick="setMood('party')">Party</button>
-    </div>
-
-    <!-- Language -->
-    <p class="font-semibold mb-2">Select Language:</p>
-    <div class="flex flex-wrap justify-center gap-2 mb-4">
-      <button class="btn" onclick="setLang('english')">English</button>
-      <button class="btn" onclick="setLang('hindi')">Hindi</button>
-      <button class="btn" onclick="setLang('punjabi')">Punjabi</button>
-      <button class="btn" onclick="setLang('gujarati')">Gujarati</button>
-    </div>
-
-    <!-- Artist -->
-    <input id="artist" type="text" placeholder="Preferred artist (optional)" class="w-full px-3 py-2 rounded text-black mb-4"/>
-
-    <!-- Playlist Button -->
-    <button onclick="getPlaylist()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded text-white transition">Get Playlist</button>
-
-    <!-- Result -->
-    <div id="result" class="mt-4 text-sm"></div>
-
-    <!-- History -->
-    <div id="history" class="mt-6 text-left text-xs"></div>
-  </div>
-
+  <title>🎧 SpotRec</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   <style>
-    .btn {
-      background-color: #1db954;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      transition: 0.2s;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1db954, #0f9d58);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-    .btn:hover {
-      background-color: #17a34a;
+    .container {
+      background: #121212;
+      color: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .label {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .button-group button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      background: #1db954;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    input, button {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      width: 85%;
+      font-size: 15px;
+      border: none;
+    }
+    .result {
+      margin-top: 20px;
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .history {
+      margin-top: 20px;
+      font-size: 14px;
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #logoutBtn {
+      margin-top: 10px;
+      background: #e50914;
     }
   </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎧 SpotRec</h1>
+    <p>Login to get personalized Spotify playlists</p>
+    <button onclick="signInWithGoogle()">Login with Google</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
 
-  <script type="module">
-    // Firebase Config
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    <div id="formSection" style="display:none;">
+      <div class="label">Select Mood:</div>
+      <div class="button-group">
+        <button onclick="setMood('happy')">Happy</button>
+        <button onclick="setMood('sad')">Sad</button>
+        <button onclick="setMood('party')">Party</button>
+        <button onclick="setMood('focus')">Focus</button>
+        <button onclick="setMood('chill')">Chill</button>
+      </div>
 
+      <div class="label">Select Language:</div>
+      <div class="button-group">
+        <button onclick="setLang('english')">English</button>
+        <button onclick="setLang('hindi')">Hindi</button>
+        <button onclick="setLang('punjabi')">Punjabi</button>
+        <button onclick="setLang('gujarati')">Gujarati</button>
+      </div>
+
+      <div class="label">Preferred Artist:</div>
+      <input type="text" id="artist" placeholder="e.g. Arijit Singh" />
+
+      <button onclick="getPlaylist()">Get Playlist</button>
+
+      <div class="result" id="result"></div>
+      <div class="history" id="history"></div>
+    </div>
+  </div>
+
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDBSexom8YYS0XLvop56ImkdQwnCFRQDqw",
       authDomain: "spotifyrec-464014.firebaseapp.com",
@@ -78,79 +122,98 @@
       appId: "1:911478887745:web:65213ce1ec3c29dbfefdc0"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
+    let selectedMood = "";
+    let selectedLang = "";
     let currentUser = null;
-    let mood = "", lang = "";
 
-    // Mood & Lang
-    window.setMood = (m) => mood = m;
-    window.setLang = (l) => lang = l;
+    function setMood(mood) {
+      selectedMood = mood;
+    }
 
-    // Login
-    document.getElementById("loginBtn").onclick = async () => {
-      try {
-        const res = await signInWithPopup(auth, provider);
-        currentUser = res.user;
-        document.getElementById("userInfo").textContent = `Logged in as: ${currentUser.email}`;
-        document.getElementById("userInfo").classList.remove("hidden");
-        document.getElementById("loginBtn").classList.add("hidden");
+    function setLang(lang) {
+      selectedLang = lang;
+    }
+
+    function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).then(result => {
+        currentUser = result.user;
+        document.getElementById("formSection").style.display = "block";
+        document.getElementById("logoutBtn").style.display = "inline-block";
         loadHistory();
-      } catch (err) {
-        alert("Login failed: " + err.message);
-      }
-    };
+      });
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        currentUser = null;
+        document.getElementById("formSection").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "none";
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("history").innerHTML = "";
+      });
+    }
 
     async function getPlaylist() {
       const artist = document.getElementById("artist").value;
       const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "⏳ Searching...";
+      const historyDiv = document.getElementById("history");
 
-      if (!mood || !lang) {
+      if (!selectedMood || !selectedLang) {
         resultDiv.innerHTML = "Please select both mood and language.";
         return;
       }
 
-      const userId = currentUser ? currentUser.uid : "";
-      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${encodeURIComponent(mood)}&lang=${encodeURIComponent(lang)}&artist=${encodeURIComponent(artist)}&user=${userId}`;
+      resultDiv.innerHTML = "Searching...";
+
+      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${selectedMood}&lang=${selectedLang}&artist=${encodeURIComponent(artist)}`;
 
       try {
         const res = await fetch(url);
         const data = await res.json();
+
         if (data.url) {
-          resultDiv.innerHTML = `<b>${data.playlist}</b><br><a href="${data.url}" target="_blank" class="underline text-green-300">Open on Spotify</a>`;
-          loadHistory();
+          resultDiv.innerHTML = `<strong>${data.playlist}</strong><br/><a href="${data.url}" target="_blank">Open in Spotify</a>`;
+          
+          if (currentUser) {
+            await db.collection("playlist_history").add({
+              user: currentUser.email,
+              mood: selectedMood,
+              lang: selectedLang,
+              artist: artist,
+              playlist: data.playlist,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            loadHistory();
+          }
+
         } else {
-          resultDiv.innerHTML = "No playlist found. Try a different mood or artist.";
+          resultDiv.innerHTML = "No playlist found.";
         }
       } catch (err) {
-        resultDiv.innerHTML = "❌ Something went wrong. Try again.";
+        resultDiv.innerHTML = "Something went wrong.";
       }
     }
 
     async function loadHistory() {
-      if (!currentUser) return;
-      const res = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/history?user=${currentUser.uid}`);
-      const historyData = await res.json();
       const historyDiv = document.getElementById("history");
-      historyDiv.innerHTML = `<h3 class="font-bold text-white mb-1">Your Playlist History:</h3>` +
-        historyData.map(d =>
-          `<div class="mb-1">🎶 <b>${d.playlist}</b> (${d.mood}, ${d.lang}) <a href="${d.url}" target="_blank" class="text-green-300 underline">Open</a></div>`
-        ).join("") || "No history yet.";
-    }
+      historyDiv.innerHTML = "<strong>Your Playlist History:</strong><br/>";
+      
+      const snapshot = await db.collection("playlist_history")
+        .where("user", "==", currentUser.email)
+        .orderBy("timestamp", "desc")
+        .limit(5)
+        .get();
 
-    // Auto login check
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("userInfo").textContent = `Logged in as: ${currentUser.email}`;
-        document.getElementById("userInfo").classList.remove("hidden");
-        document.getElementById("loginBtn").classList.add("hidden");
-        loadHistory();
-      }
-    });
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        historyDiv.innerHTML += `${d.mood} | ${d.lang} | ${d.artist || '—'}<br/>→ <a href="https://open.spotify.com/search/${d.playlist}" target="_blank">${d.playlist}</a><br/><br/>`;
+      });
+    }
   </script>
 </body>
 </html>
