@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SpotRec</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -10,26 +10,35 @@
     body {
       background: linear-gradient(135deg, #0f9d58, #1db954);
       font-family: 'Segoe UI', sans-serif;
+      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      margin: 0;
     }
     .container {
       background: #121212;
-      padding: 40px;
-      border-radius: 20px;
+      padding: 30px;
+      border-radius: 15px;
       color: white;
+      text-align: center;
       max-width: 400px;
       width: 90%;
-      text-align: center;
     }
-    .label {
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      color: #333;
       font-weight: bold;
-      font-size: 18px;
-      margin-top: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
     }
+    .google-btn img { height: 20px; margin-right: 10px; }
+    .label { margin-top: 20px; font-weight: bold; }
     .button-group {
       display: flex;
       flex-wrap: wrap;
@@ -38,166 +47,136 @@
       margin-top: 10px;
     }
     .button-group button, .get-btn {
-      background: #1db954;
+      padding: 10px;
       border: none;
+      border-radius: 8px;
+      background: #1db954;
       color: white;
-      border-radius: 8px;
-      padding: 10px 15px;
-      font-size: 14px;
       cursor: pointer;
-    }
-    .google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: white;
-      color: #444;
-      font-weight: bold;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      gap: 10px;
       font-size: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      margin-bottom: 15px;
-    }
-    .google-btn img { height: 20px; }
-    .get-btn {
-      margin-top: 15px;
-      width: 100%;
     }
     input {
-      padding: 10px;
-      width: 90%;
-      border-radius: 8px;
       margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
+      width: 100%;
     }
     .result, #history {
-      margin-top: 20px;
       background: #222;
-      padding: 15px;
+      margin-top: 20px;
+      padding: 10px;
       border-radius: 10px;
       font-size: 14px;
+      text-align: left;
       max-height: 200px;
       overflow-y: auto;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎧 SpotRec</h1>
-    <p>Spotify playlists by mood, language & artist</p>
+<div class="container">
+  <h1>🎧 SpotRec</h1>
+  <p>Spotify playlists based on mood, language & artist</p>
 
-    <button class="google-btn" onclick="loginWithGoogle()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" />
-      Sign in with Google
-    </button>
+  <button class="google-btn" onclick="loginWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+    Login with Google
+  </button>
 
-    <div class="label">Select Your Mood:</div>
-    <div class="button-group" id="mood-buttons">
-      <button onclick="setMood('happy')">Happy</button>
-      <button onclick="setMood('sad')">Sad</button>
-      <button onclick="setMood('chill')">Chill</button>
-      <button onclick="setMood('focus')">Focus</button>
-      <button onclick="setMood('romantic')">Romantic</button>
-      <button onclick="setMood('party')">Party</button>
-    </div>
-
-    <div class="label">Select Language:</div>
-    <div class="button-group" id="lang-buttons">
-      <button onclick="setLang('english')">English</button>
-      <button onclick="setLang('hindi')">Hindi</button>
-      <button onclick="setLang('punjabi')">Punjabi</button>
-      <button onclick="setLang('gujarati')">Gujarati</button>
-    </div>
-
-    <div class="label">Preferred Artist:</div>
-    <input type="text" id="artist" placeholder="e.g. Arijit Singh, AP Dhillon" />
-
-    <button class="get-btn" onclick="getPlaylist()">🎵 Get Playlist</button>
-
-    <div class="result" id="result"></div>
-    <div class="label">Your Playlist History:</div>
-    <div class="result" id="history"></div>
+  <div class="label">Mood:</div>
+  <div class="button-group">
+    <button onclick="setMood('happy')">Happy</button>
+    <button onclick="setMood('sad')">Sad</button>
+    <button onclick="setMood('focus')">Focus</button>
+    <button onclick="setMood('romantic')">Romantic</button>
+    <button onclick="setMood('chill')">Chill</button>
+    <button onclick="setMood('party')">Party</button>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDBSexom8YYS0XLvop56ImkdQwnCFRQDqw",
-      authDomain: "spotifyrec-464014.firebaseapp.com",
-      projectId: "spotifyrec-464014",
-    };
-    firebase.initializeApp(firebaseConfig);
+  <div class="label">Language:</div>
+  <div class="button-group">
+    <button onclick="setLang('english')">English</button>
+    <button onclick="setLang('hindi')">Hindi</button>
+    <button onclick="setLang('punjabi')">Punjabi</button>
+    <button onclick="setLang('gujarati')">Gujarati</button>
+  </div>
 
-    let userEmail = "";
-    let selectedMood = "", selectedLang = "";
+  <div class="label">Artist:</div>
+  <input id="artist" placeholder="e.g. Arijit Singh, AP Dhillon" />
 
-    function setMood(mood) { selectedMood = mood; }
-    function setLang(lang) { selectedLang = lang; }
+  <button class="get-btn" onclick="getPlaylist()">🎵 Get Playlist</button>
 
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).then(result => {
-        userEmail = result.user.email;
-        alert("Logged in as " + userEmail);
-        fetchHistory();
-      }).catch(err => alert("Login failed: " + err.message));
+  <div class="result" id="result"></div>
+  <div class="label">History</div>
+  <div class="result" id="history"></div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDBSexom8YYS0XLvop56ImkdQwnCFRQDqw",
+    authDomain: "spotifyrec-464014.firebaseapp.com",
+    projectId: "spotifyrec-464014",
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  let userEmail = "", mood = "", lang = "";
+
+  function setMood(m) { mood = m; }
+  function setLang(l) { lang = l; }
+
+  function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(result => {
+      userEmail = result.user.email;
+      alert("Logged in as " + userEmail);
+      fetchHistory();
+    });
+  }
+
+  async function getPlaylist() {
+    const artist = document.getElementById("artist").value;
+    const resultDiv = document.getElementById("result");
+
+    if (!mood || !lang) {
+      resultDiv.innerHTML = "Please select both mood and language.";
+      return;
     }
 
-    async function getPlaylist() {
-      const artist = document.getElementById("artist").value;
-      const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "Fetching...";
+    const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${mood}&lang=${lang}&artist=${encodeURIComponent(artist)}&email=${encodeURIComponent(userEmail)}`;
 
-      if (!selectedMood || !selectedLang) {
-        resultDiv.innerHTML = "Please select both mood and language.";
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.url) {
+        resultDiv.innerHTML = `<strong>${data.playlist}</strong><br><a href="${data.url}" target="_blank">Open Playlist</a>`;
+        fetchHistory();
+      } else {
+        resultDiv.innerHTML = "No playlist found.";
+      }
+    } catch {
+      resultDiv.innerHTML = "Something went wrong.";
+    }
+  }
+
+  async function fetchHistory() {
+    if (!userEmail) return;
+    const historyDiv = document.getElementById("history");
+    try {
+      const res = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/history?email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      if (!data.length) {
+        historyDiv.innerHTML = "No history found.";
         return;
       }
-
-      resultDiv.innerHTML = "Searching...";
-      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${selectedMood}&lang=${selectedLang}&artist=${encodeURIComponent(artist)}&email=${encodeURIComponent(userEmail)}`;
-      
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.url) {
-          resultDiv.innerHTML = `<strong>${data.playlist}</strong><br><a href="${data.url}" target="_blank">Open on Spotify</a>`;
-          fetchHistory();
-        } else {
-          resultDiv.innerHTML = "No playlist found.";
-        }
-      } catch {
-        resultDiv.innerHTML = "Error. Try again.";
-      }
+      historyDiv.innerHTML = data.map(item => `
+        <div><strong>${item.playlist_name}</strong><br>Mood: ${item.mood} | Lang: ${item.lang}<br><a href="${item.playlist_url}" target="_blank">Open</a></div>
+      `).join("<hr>");
+    } catch {
+      historyDiv.innerHTML = "Error loading history.";
     }
-
-    async function fetchHistory() {
-      if (!userEmail) return;
-      const historyDiv = document.getElementById("history");
-      historyDiv.innerHTML = "Loading...";
-
-      try {
-        const res = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/history?email=${encodeURIComponent(userEmail)}`);
-        const data = await res.json();
-
-        if (!data.length) {
-          historyDiv.innerHTML = "No previous playlists found.";
-          return;
-        }
-
-        historyDiv.innerHTML = data.map(item => `
-          <div style="margin-bottom: 10px;">
-            <strong>${item.playlist_name}</strong><br>
-            Mood: ${item.mood} | Lang: ${item.lang}<br>
-            <a href="${item.playlist_url}" target="_blank">Open Playlist</a>
-          </div>
-        `).join("");
-      } catch {
-        historyDiv.innerHTML = "Couldn't load history.";
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>
