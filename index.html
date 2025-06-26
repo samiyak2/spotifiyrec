@@ -2,202 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Moodify</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <style>
-    body {
-      background: linear-gradient(135deg, #0f9d58, #1db954);
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #121212;
-      padding: 40px;
-      border-radius: 20px;
-      color: white;
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-    }
-    .label {
-      font-weight: bold;
-      font-size: 18px;
-      margin-top: 20px;
-    }
-    .button-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 10px;
-    }
-    .button-group button, .get-btn {
-      background: #1db954;
-      border: none;
-      color: white;
-      border-radius: 8px;
-      padding: 10px 15px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: white;
-      color: #444;
-      font-weight: bold;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      gap: 10px;
-      font-size: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      margin-bottom: 15px;
-    }
-    .google-btn img { height: 20px; }
-    .get-btn {
-      margin-top: 15px;
-      width: 100%;
-    }
-    input {
-      padding: 10px;
-      width: 90%;
-      border-radius: 8px;
-      margin-top: 10px;
-      border: none;
-    }
-    .result, #history {
-      margin-top: 20px;
-      background: #222;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 14px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moodify 🎧</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>🎧 SpotRec</h1>
-    <p>Spotify playlists by mood, language & artist</p>
+<body class="bg-gradient-to-br from-green-500 to-green-700 min-h-screen flex items-center justify-center text-white px-4">
+  <div class="bg-black bg-opacity-70 p-6 rounded-xl shadow-lg max-w-md w-full text-center">
+    <h1 class="text-3xl font-bold mb-2">🎧 Moodify</h1>
+    <p class="mb-4 text-sm">Get personalized Spotify playlists by mood, language, and artist</p>
 
-    <button class="google-btn" onclick="loginWithGoogle()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" />
-      Sign in with Google
-    </button>
+    <!-- Login -->
+    <button id="loginBtn" class="bg-white text-black px-4 py-2 rounded mb-4 hover:bg-gray-200 transition-all">Login with Google</button>
+    <p id="userInfo" class="text-xs mb-2 hidden"></p>
 
-    <div class="label">Select Your Mood:</div>
-    <div class="button-group" id="mood-buttons">
-      <button onclick="setMood('happy')">Happy</button>
-      <button onclick="setMood('sad')">Sad</button>
-      <button onclick="setMood('chill')">Chill</button>
-      <button onclick="setMood('focus')">Focus</button>
-      <button onclick="setMood('romantic')">Romantic</button>
-      <button onclick="setMood('party')">Party</button>
+    <!-- Mood -->
+    <p class="font-semibold mt-4 mb-2">Select Mood:</p>
+    <div class="flex flex-wrap justify-center gap-2 mb-4">
+      <button class="btn" onclick="setMood('happy')">Happy</button>
+      <button class="btn" onclick="setMood('sad')">Sad</button>
+      <button class="btn" onclick="setMood('chill')">Chill</button>
+      <button class="btn" onclick="setMood('focus')">Focus</button>
+      <button class="btn" onclick="setMood('romantic')">Romantic</button>
+      <button class="btn" onclick="setMood('party')">Party</button>
     </div>
 
-    <div class="label">Select Language:</div>
-    <div class="button-group" id="lang-buttons">
-      <button onclick="setLang('english')">English</button>
-      <button onclick="setLang('hindi')">Hindi</button>
-      <button onclick="setLang('punjabi')">Punjabi</button>
-      <button onclick="setLang('gujarati')">Gujarati</button>
+    <!-- Language -->
+    <p class="font-semibold mb-2">Select Language:</p>
+    <div class="flex flex-wrap justify-center gap-2 mb-4">
+      <button class="btn" onclick="setLang('english')">English</button>
+      <button class="btn" onclick="setLang('hindi')">Hindi</button>
+      <button class="btn" onclick="setLang('punjabi')">Punjabi</button>
+      <button class="btn" onclick="setLang('gujarati')">Gujarati</button>
     </div>
 
-    <div class="label">Preferred Artist:</div>
-    <input type="text" id="artist" placeholder="e.g. Arijit Singh, AP Dhillon" />
+    <!-- Artist -->
+    <input id="artist" type="text" placeholder="Preferred artist (optional)" class="w-full px-3 py-2 rounded text-black mb-4"/>
 
-    <button class="get-btn" onclick="getPlaylist()">🎵 Get Playlist</button>
+    <!-- Playlist Button -->
+    <button onclick="getPlaylist()" class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded text-white transition">Get Playlist</button>
 
-    <div class="result" id="result"></div>
-    <div class="label">Your Playlist History:</div>
-    <div class="result" id="history"></div>
+    <!-- Result -->
+    <div id="result" class="mt-4 text-sm"></div>
+
+    <!-- History -->
+    <div id="history" class="mt-6 text-left text-xs"></div>
   </div>
 
-  <script>
+  <style>
+    .btn {
+      background-color: #1db954;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      background-color: #17a34a;
+    }
+  </style>
+
+  <script type="module">
+    // Firebase Config
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDBSexom8YYS0XLvop56ImkdQwnCFRQDqw",
       authDomain: "spotifyrec-464014.firebaseapp.com",
       projectId: "spotifyrec-464014",
+      storageBucket: "spotifyrec-464014.appspot.com",
+      messagingSenderId: "911478887745",
+      appId: "1:911478887745:web:65213ce1ec3c29dbfefdc0"
     };
-    firebase.initializeApp(firebaseConfig);
 
-    let userEmail = "";
-    let selectedMood = "", selectedLang = "";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
-    function setMood(mood) { selectedMood = mood; }
-    function setLang(lang) { selectedLang = lang; }
+    let currentUser = null;
+    let mood = "", lang = "";
 
-    function loginWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider).then(result => {
-        userEmail = result.user.email;
-        alert("Logged in as " + userEmail);
-        fetchHistory();
-      }).catch(err => alert("Login failed: " + err.message));
-    }
+    // Mood & Lang
+    window.setMood = (m) => mood = m;
+    window.setLang = (l) => lang = l;
+
+    // Login
+    document.getElementById("loginBtn").onclick = async () => {
+      try {
+        const res = await signInWithPopup(auth, provider);
+        currentUser = res.user;
+        document.getElementById("userInfo").textContent = `Logged in as: ${currentUser.email}`;
+        document.getElementById("userInfo").classList.remove("hidden");
+        document.getElementById("loginBtn").classList.add("hidden");
+        loadHistory();
+      } catch (err) {
+        alert("Login failed: " + err.message);
+      }
+    };
 
     async function getPlaylist() {
       const artist = document.getElementById("artist").value;
       const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "⏳ Searching...";
 
-      if (!selectedMood || !selectedLang) {
+      if (!mood || !lang) {
         resultDiv.innerHTML = "Please select both mood and language.";
         return;
       }
 
-      resultDiv.innerHTML = "Searching...";
-      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${selectedMood}&lang=${selectedLang}&artist=${encodeURIComponent(artist)}&email=${encodeURIComponent(userEmail)}`;
-      
+      const userId = currentUser ? currentUser.uid : "";
+      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${encodeURIComponent(mood)}&lang=${encodeURIComponent(lang)}&artist=${encodeURIComponent(artist)}&user=${userId}`;
+
       try {
         const res = await fetch(url);
         const data = await res.json();
-
         if (data.url) {
-          resultDiv.innerHTML = `<strong>${data.playlist}</strong><br><a href="${data.url}" target="_blank">Open on Spotify</a>`;
-          fetchHistory();
+          resultDiv.innerHTML = `<b>${data.playlist}</b><br><a href="${data.url}" target="_blank" class="underline text-green-300">Open on Spotify</a>`;
+          loadHistory();
         } else {
-          resultDiv.innerHTML = "No playlist found.";
+          resultDiv.innerHTML = "No playlist found. Try a different mood or artist.";
         }
-      } catch {
-        resultDiv.innerHTML = "Error. Try again.";
+      } catch (err) {
+        resultDiv.innerHTML = "❌ Something went wrong. Try again.";
       }
     }
 
-    async function fetchHistory() {
-      if (!userEmail) return;
+    async function loadHistory() {
+      if (!currentUser) return;
+      const res = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/history?user=${currentUser.uid}`);
+      const historyData = await res.json();
       const historyDiv = document.getElementById("history");
-      historyDiv.innerHTML = "Loading...";
-
-      try {
-        const res = await fetch(`https://spotrec-backend-911478887745.asia-south1.run.app/history?email=${encodeURIComponent(userEmail)}`);
-        const data = await res.json();
-
-        if (!data.length) {
-          historyDiv.innerHTML = "No previous playlists found.";
-          return;
-        }
-
-        historyDiv.innerHTML = data.map(item => `
-          <div style="margin-bottom: 10px;">
-            <strong>${item.playlist_name}</strong><br>
-            Mood: ${item.mood} | Lang: ${item.lang}<br>
-            <a href="${item.playlist_url}" target="_blank">Open Playlist</a>
-          </div>
-        `).join("");
-      } catch {
-        historyDiv.innerHTML = "Couldn't load history.";
-      }
+      historyDiv.innerHTML = `<h3 class="font-bold text-white mb-1">Your Playlist History:</h3>` +
+        historyData.map(d =>
+          `<div class="mb-1">🎶 <b>${d.playlist}</b> (${d.mood}, ${d.lang}) <a href="${d.url}" target="_blank" class="text-green-300 underline">Open</a></div>`
+        ).join("") || "No history yet.";
     }
+
+    // Auto login check
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("userInfo").textContent = `Logged in as: ${currentUser.email}`;
+        document.getElementById("userInfo").classList.remove("hidden");
+        document.getElementById("loginBtn").classList.add("hidden");
+        loadHistory();
+      }
+    });
   </script>
 </body>
 </html>
