@@ -116,7 +116,7 @@
   const firebaseConfig = {
     apiKey: "AIzaSyDBSexom8YYS0XLvop56ImkdQwnCFRQDqw",
     authDomain: "spotifyrec-464014.firebaseapp.com",
-    projectId: "spotifyrec-464014",
+    projectId: "spotifyrec-464014"
   };
   firebase.initializeApp(firebaseConfig);
 
@@ -138,8 +138,8 @@
     const artist = document.getElementById("artist").value;
     const resultDiv = document.getElementById("result");
 
-    if (!mood || !lang) {
-      resultDiv.innerHTML = "Please select both mood and language.";
+    if (!mood || !lang || !userEmail) {
+      resultDiv.innerHTML = "Please select mood, language and login.";
       return;
     }
 
