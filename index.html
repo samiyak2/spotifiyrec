@@ -2,103 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SpotRec</title>
-  <style>
-    body {
-      background: linear-gradient(135deg, #0f9d58, #1db954);
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #121212;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0px 4px 20px rgba(0,0,0,0.4);
-      text-align: center;
-      color: white;
-      max-width: 400px;
-      width: 90%;
-    }
-    h1 {
-      margin-bottom: 10px;
-    }
-    input, select, button {
-      margin-top: 15px;
-      padding: 10px;
-      width: 80%;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-    }
-    button {
-
-      olor: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .result {
-      margin-top: 20px;
-      font-size: 16px;
-      background: #222;
-      padding: 15px;
-      border-radius: 10px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SpotRec 🎧</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body>
-  <div class="container">
-    <h1>🎧 SpotRec</h1>
-    <p>Get Spotify playlist based on mood, language & artist</p>
+<body class="bg-gradient-to-br from-emerald-500 to-green-600 min-h-screen text-white p-4">
 
-    <input type="text" id="mood" placeholder="Enter your mood (e.g. chill)" />
+  <div class="max-w-3xl mx-auto bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
+    <!-- Google Sign-In button -->
+    <div id="g_id_onload"
+         data-client_id="YOUR_GOOGLE_OAUTH_CLIENT_ID"
+         data-auto_prompt="false"
+         data-callback="handleCredentialResponse">
+    </div>
+    <div class="flex justify-end p-4">
+      <div id="g_id_signin"></div>
+    </div>
 
-    <select id="lang">
-      <option value="english">English</option>
-      <option value="hindi">Hindi</option>
-      <option value="punjabi">Punjabi</option>
-      <option value="gujarati">Gujarati</option>
-      <option value="tamil">Tamil</option>
-      <option value="telugu">Telugu</option>
-      <option value="korean">Korean</option>
-    </select>
+    <!-- Tabs -->
+    <div class="flex">
+      <button id="tab-spot" class="flex-1 py-3 text-center bg-zinc-800 hover:bg-zinc-700 transition font-semibold">SpotRec</button>
+      <button id="tab-history" class="flex-1 py-3 text-center bg-zinc-900 hover:bg-zinc-800 transition font-semibold">History</button>
+    </div>
+    
+    <!-- Content: SpotRec -->
+    <div id="content-spot" class="p-6">
+      <h1 class="text-2xl font-bold mb-2">🎧 SpotRec</h1>
+      <p class="text-gray-400 mb-4">Welcome, <span id="user-email">Guest</span></p>
+      <!-- ... (same UI as before) ... -->
+      <div class="space-y-4">
+        <!-- Mood -->
+        <div>
+          <h2 class="font-semibold">Mood</h2>
+          <div id="mood-buttons" class="flex flex-wrap gap-2 mt-1"></div>
+        </div>
+        <!-- Language -->
+        <div>
+          <h2 class="font-semibold">Language</h2>
+          <div id="lang-buttons" class="flex flex-wrap gap-2 mt-1"></div>
+        </div>
+        <!-- Activity -->
+        <div>
+          <h2 class="font-semibold">Activity</h2>
+          <div id="activity-buttons" class="flex flex-wrap gap-2 mt-1"></div>
+        </div>
+        <!-- Artist -->
+        <div>
+          <h2 class="font-semibold">Artist (Optional)</h2>
+          <input id="artist" type="text" placeholder="e.g. AP Dhillon" 
+            class="w-full mt-1 p-2 rounded-lg text-black focus:ring-2 ring-green-400 outline-none"/>
+        </div>
+        <button id="search-btn" class="bg-green-500 hover:bg-green-600 w-full py-2 rounded-lg mt-4 font-bold">Get Playlist</button>
+        <div id="result" class="mt-4 text-center"></div>
+      </div>
+    </div>
 
-    <input type="text" id="artist" placeholder="Optional: Favorite artist" />
-
-    <button onclick="getPlaylist()">Get Playlist</button>
-
-    <div class="result" id="result"></div>
+    <!-- Content: History -->
+    <div id="content-history" class="hidden p-6 overflow-x-auto">
+      <h1 class="text-2xl font-bold mb-4">📜 Search History</h1>
+      <table class="min-w-full table-auto text-sm">
+        <thead>
+          <tr class="bg-zinc-800"><th class="px-2 py-1">When</th><th class="px-2 py-1">Mood</th><th class="px-2 py-1">Lang</th><th class="px-2 py-1">Artist</th><th class="px-2 py-1">Act</th><th class="px-2 py-1">Playlist</th><th class="px-2 py-1">Link</th></tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
   </div>
 
   <script>
-    async function getPlaylist() {
-      const mood = document.getElementById("mood").value;
-      const lang = document.getElementById("lang").value;
-      const artist = document.getElementById("artist").value;
-      const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "Searching...";
+    // Google Sign-In callback
+    let userEmail = 'Guest';
+    function handleCredentialResponse(response) {
+      // decode JWT to get email
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      userEmail = payload.email;
+      document.getElementById('user-email').textContent = userEmail;
+      // show history if active
+    }
+    window.onload = () => {
+      google.accounts.id.renderButton(
+        document.getElementById("g_id_signin"),
+        { theme: "outline", size: "small" }
+      );
+    };
 
-      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${encodeURIComponent(mood)}&lang=${encodeURIComponent(lang)}&artist=${encodeURIComponent(artist)}`;
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.url) {
-          resultDiv.innerHTML = `
-            <strong>${data.playlist}</strong><br />
-            <a href="${data.url}" target="_blank">Open on Spotify</a>
-          `;
-        } else {
-          resultDiv.innerHTML = "No playlist found for this combination.";
-        }
-      } catch (err) {
-        resultDiv.innerHTML = "Something went wrong. Please try again.";
+    // Tab logic (same as before) ...
+    // Button creation (same as before) ...
+    // getPlaylist modified to include userEmail:
+    document.getElementById('search-btn').onclick = async () => {
+      const resDiv = document.getElementById('result');
+      if(!selMood||!selLang){
+        resDiv.innerHTML = `<span class="text-red-400">Select mood & language</span>`;
+        return;
       }
+      resDiv.innerHTML = `<span class="animate-pulse">🔍 Searching...</span>`;
+      const artist = encodeURIComponent(document.getElementById('artist').value);
+      const url = `https://YOUR_CLOUD_RUN_URL/recommend`
+        + `?mood=${selMood}&lang=${selLang}&activity=${selAct}`
+        + `&artist=${artist}&user=${encodeURIComponent(userEmail)}`;
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if(data.url){
+          resDiv.innerHTML = `<strong>${data.playlist}</strong><br>
+            <a class="text-green-400 underline" href="${data.url}" target="_blank">Listen on Spotify</a>`;
+        } else {
+          resDiv.innerHTML = `<span class="text-yellow-400">${data.error||'No playlist found'}</span>`;
+        }
+      } catch(e){
+        resDiv.innerHTML = `<span class="text-red-400">Error. Try later.</span>`;
+      }
+    };
+    // loadHistory same as before but filtered by user:
+    async function loadHistory(){
+      const tb = document.getElementById('history-body');
+      tb.innerHTML = '';
+      const res = await fetch(`https://YOUR_CLOUD_RUN_URL/history?user=${encodeURIComponent(userEmail)}`);
+      const arr = await res.json();
+      // build rows...
     }
   </script>
 </body>
