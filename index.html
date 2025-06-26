@@ -2,127 +2,198 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SpotRec 🎧</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f9d58, #1db954);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #121212;
+      padding: 30px;
+      border-radius: 20px;
+      color: white;
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      margin-bottom: 5px;
+    }
+    p {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .label {
+      font-weight: bold;
+      margin: 15px 0 5px;
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .button-group button {
+      background: #1db954;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+    }
+    .result {
+      margin-top: 20px;
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .login-btn {
+      margin-bottom: 20px;
+      background: #4285f4;
+    }
+  </style>
 </head>
-<body class="bg-gradient-to-br from-emerald-500 to-green-600 min-h-screen text-white p-4">
+<body>
+  <div class="container">
+    <h1>🎧 SpotRec</h1>
+    <p>Get Spotify playlists based on mood, language & artist</p>
 
-  <div class="max-w-3xl mx-auto bg-zinc-900 rounded-3xl shadow-2xl overflow-hidden">
-    <!-- Google Sign-In button -->
-    <div id="g_id_onload"
-         data-client_id="YOUR_GOOGLE_OAUTH_CLIENT_ID"
-         data-auto_prompt="false"
-         data-callback="handleCredentialResponse">
-    </div>
-    <div class="flex justify-end p-4">
-      <div id="g_id_signin"></div>
-    </div>
+    <button class="login-btn" onclick="loginWithGoogle()">Login with Google</button>
+    <div id="user-info"></div>
 
-    <!-- Tabs -->
-    <div class="flex">
-      <button id="tab-spot" class="flex-1 py-3 text-center bg-zinc-800 hover:bg-zinc-700 transition font-semibold">SpotRec</button>
-      <button id="tab-history" class="flex-1 py-3 text-center bg-zinc-900 hover:bg-zinc-800 transition font-semibold">History</button>
-    </div>
-    
-    <!-- Content: SpotRec -->
-    <div id="content-spot" class="p-6">
-      <h1 class="text-2xl font-bold mb-2">🎧 SpotRec</h1>
-      <p class="text-gray-400 mb-4">Welcome, <span id="user-email">Guest</span></p>
-      <!-- ... (same UI as before) ... -->
-      <div class="space-y-4">
-        <!-- Mood -->
-        <div>
-          <h2 class="font-semibold">Mood</h2>
-          <div id="mood-buttons" class="flex flex-wrap gap-2 mt-1"></div>
-        </div>
-        <!-- Language -->
-        <div>
-          <h2 class="font-semibold">Language</h2>
-          <div id="lang-buttons" class="flex flex-wrap gap-2 mt-1"></div>
-        </div>
-        <!-- Activity -->
-        <div>
-          <h2 class="font-semibold">Activity</h2>
-          <div id="activity-buttons" class="flex flex-wrap gap-2 mt-1"></div>
-        </div>
-        <!-- Artist -->
-        <div>
-          <h2 class="font-semibold">Artist (Optional)</h2>
-          <input id="artist" type="text" placeholder="e.g. AP Dhillon" 
-            class="w-full mt-1 p-2 rounded-lg text-black focus:ring-2 ring-green-400 outline-none"/>
-        </div>
-        <button id="search-btn" class="bg-green-500 hover:bg-green-600 w-full py-2 rounded-lg mt-4 font-bold">Get Playlist</button>
-        <div id="result" class="mt-4 text-center"></div>
-      </div>
+    <div class="label">Select Your Mood:</div>
+    <div class="button-group">
+      <button onclick="setMood('happy')">Happy</button>
+      <button onclick="setMood('sad')">Sad</button>
+      <button onclick="setMood('chill')">Chill</button>
+      <button onclick="setMood('focus')">Focus</button>
+      <button onclick="setMood('romantic')">Romantic</button>
+      <button onclick="setMood('party')">Party</button>
+      <button onclick="setMood('energetic')">Energetic</button>
+      <button onclick="setMood('calm')">Calm</button>
     </div>
 
-    <!-- Content: History -->
-    <div id="content-history" class="hidden p-6 overflow-x-auto">
-      <h1 class="text-2xl font-bold mb-4">📜 Search History</h1>
-      <table class="min-w-full table-auto text-sm">
-        <thead>
-          <tr class="bg-zinc-800"><th class="px-2 py-1">When</th><th class="px-2 py-1">Mood</th><th class="px-2 py-1">Lang</th><th class="px-2 py-1">Artist</th><th class="px-2 py-1">Act</th><th class="px-2 py-1">Playlist</th><th class="px-2 py-1">Link</th></tr>
-        </thead>
-        <tbody id="history-body"></tbody>
-      </table>
+    <div class="label">Select Language:</div>
+    <div class="button-group">
+      <button onclick="setLang('english')">English</button>
+      <button onclick="setLang('hindi')">Hindi</button>
+      <button onclick="setLang('punjabi')">Punjabi</button>
+      <button onclick="setLang('gujarati')">Gujarati</button>
+      <button onclick="setLang('tamil')">Tamil</button>
+      <button onclick="setLang('telugu')">Telugu</button>
+      <button onclick="setLang('korean')">Korean</button>
     </div>
+
+    <div class="label">Any artist you prefer?</div>
+    <input type="text" id="artist" placeholder="e.g. Arijit Singh, AP Dhillon" />
+
+    <button onclick="getPlaylist()">Get Playlist</button>
+
+    <div class="result" id="result"></div>
   </div>
 
-  <script>
-    // Google Sign-In callback
-    let userEmail = 'Guest';
-    function handleCredentialResponse(response) {
-      // decode JWT to get email
-      const payload = JSON.parse(atob(response.credential.split('.')[1]));
-      userEmail = payload.email;
-      document.getElementById('user-email').textContent = userEmail;
-      // show history if active
-    }
-    window.onload = () => {
-      google.accounts.id.renderButton(
-        document.getElementById("g_id_signin"),
-        { theme: "outline", size: "small" }
-      );
+  <!-- Firebase SDK (ES Modules) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDBSexom8YYS0XLvop56ImkdQwnCFRQDqw",
+      authDomain: "spotifyrec-464014.firebaseapp.com",
+      projectId: "spotifyrec-464014",
+      storageBucket: "spotifyrec-464014.appspot.com",
+      messagingSenderId: "911478887745",
+      appId: "1:911478887745:web:65213ce1ec3c29dbfefdc0"
     };
 
-    // Tab logic (same as before) ...
-    // Button creation (same as before) ...
-    // getPlaylist modified to include userEmail:
-    document.getElementById('search-btn').onclick = async () => {
-      const resDiv = document.getElementById('result');
-      if(!selMood||!selLang){
-        resDiv.innerHTML = `<span class="text-red-400">Select mood & language</span>`;
-        return;
-      }
-      resDiv.innerHTML = `<span class="animate-pulse">🔍 Searching...</span>`;
-      const artist = encodeURIComponent(document.getElementById('artist').value);
-      const url = `https://YOUR_CLOUD_RUN_URL/recommend`
-        + `?mood=${selMood}&lang=${selLang}&activity=${selAct}`
-        + `&artist=${artist}&user=${encodeURIComponent(userEmail)}`;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let selectedMood = "";
+    let selectedLang = "";
+    let currentUser = null;
+
+    window.setMood = (m) => selectedMood = m;
+    window.setLang = (l) => selectedLang = l;
+
+    window.loginWithGoogle = async function () {
+      const provider = new GoogleAuthProvider();
       try {
-        const resp = await fetch(url);
-        const data = await resp.json();
-        if(data.url){
-          resDiv.innerHTML = `<strong>${data.playlist}</strong><br>
-            <a class="text-green-400 underline" href="${data.url}" target="_blank">Listen on Spotify</a>`;
-        } else {
-          resDiv.innerHTML = `<span class="text-yellow-400">${data.error||'No playlist found'}</span>`;
-        }
-      } catch(e){
-        resDiv.innerHTML = `<span class="text-red-400">Error. Try later.</span>`;
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        currentUser = user;
+
+        document.getElementById("user-info").innerText = `Logged in as: ${user.displayName}`;
+
+        await addDoc(collection(db, "users"), {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          loginTime: new Date()
+        });
+      } catch (error) {
+        alert("Login failed: " + error.message);
       }
     };
-    // loadHistory same as before but filtered by user:
-    async function loadHistory(){
-      const tb = document.getElementById('history-body');
-      tb.innerHTML = '';
-      const res = await fetch(`https://YOUR_CLOUD_RUN_URL/history?user=${encodeURIComponent(userEmail)}`);
-      const arr = await res.json();
-      // build rows...
-    }
+
+    window.getPlaylist = async function () {
+      const artist = document.getElementById("artist").value;
+      const resultDiv = document.getElementById("result");
+
+      if (!selectedMood || !selectedLang) {
+        resultDiv.innerText = "Please select both mood and language.";
+        return;
+      }
+
+      resultDiv.innerText = "Fetching your playlist...";
+
+      const url = `https://spotrec-backend-911478887745.asia-south1.run.app/recommend?mood=${encodeURIComponent(selectedMood)}&lang=${encodeURIComponent(selectedLang)}&artist=${encodeURIComponent(artist)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.url) {
+          resultDiv.innerHTML = `<strong>${data.playlist}</strong><br><a href="${data.url}" target="_blank">Open on Spotify</a>`;
+        } else {
+          resultDiv.innerText = "No playlist found.";
+        }
+
+        if (currentUser) {
+          await addDoc(collection(db, "playlist_logs"), {
+            uid: currentUser.uid,
+            mood: selectedMood,
+            language: selectedLang,
+            artist: artist || "None",
+            result: data.playlist || "Not found",
+            url: data.url || "",
+            timestamp: new Date()
+          });
+        }
+
+      } catch (error) {
+        resultDiv.innerText = "Something went wrong!";
+      }
+    };
   </script>
 </body>
 </html>
